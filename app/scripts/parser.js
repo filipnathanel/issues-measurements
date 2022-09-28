@@ -1,6 +1,6 @@
 $(function(){
   // Constants
-  PER_PAGE = 100
+  var PER_PAGE = 100
 
   // Construstor
   var Parser = function() {
@@ -70,7 +70,7 @@ $(function(){
    * Github token for auth requests
    * @type {String}
    */
-  Parser.prototype.token = getCookie("token")
+  Parser.prototype.token = getCookie('token')
 
   /**
    * Set to null all attributes
@@ -92,7 +92,7 @@ $(function(){
     this.resetAttributes()
     this.beforeParse()
     var github = this.auth()
-    var repository_uri_splitted = repository_uri.split("/")
+    var repository_uri_splitted = repository_uri.split('/')
     var username = repository_uri_splitted[0]
     var reponame = repository_uri_splitted[1]
 
@@ -122,7 +122,7 @@ $(function(){
       // can't be set as env vars, because it's client-side javascript
       // therefore hardcode all the tokens!
         token: that.token
-      , auth: "oauth"
+      , auth: 'oauth'
       , _onProgress: function(issues_pages, events_pages, current_issue_page, current_event_page) {
         if (issues_pages != null) {
           that.issuesPages = issues_pages
@@ -151,22 +151,22 @@ $(function(){
    */
   Parser.prototype.fillIssuesData = function(final_repo_info, github, repository_uri) {
     var that = this
-    var repository_uri_splitted = repository_uri.split("/")
+    var repository_uri_splitted = repository_uri.split('/')
     var username = repository_uri_splitted[0]
     var reponame = repository_uri_splitted[1]
     var issues = github.getIssues(username, reponame)
     var issues_events = github.getIssuesEvents(username, reponame)
-    issues.list_all({"state": "all", "per_page": PER_PAGE}, function(err, issues) {
+    issues.list_all({'state': 'all', 'per_page': PER_PAGE}, function(err, issues) {
       if (err !== null) {
         return that.checkError(err, repository_uri)
       }
       final_repo_info.labels = that.get_labels(issues)
       var all_issues = issues.filter(is_not_pull_request)
       if (all_issues.length === 0) {
-        return that.onError("Specified repository has no issues. Please try another one.")
+        return that.onError('Specified repository has no issues. Please try another one.')
       }
 
-      issues_events.list_all({"per_page": PER_PAGE}, function(err, issues_events) {
+      issues_events.list_all({'per_page': PER_PAGE}, function(err, issues_events) {
         if (err !== null) {
           return that.checkError(err, repository_uri)
         }
@@ -254,14 +254,14 @@ $(function(){
         labels.push(issue.labels[j].name)
       }
       issues_obj[issue.number] = {
-          "url": issue.url
-        , "title": issue.title
-        , "state": issue.state
-        , "open": [{
-            "from": formatDate(new Date(issue.created_at))
-          , "to": issue.closed_at === null ? null : formatDate(new Date(issue.closed_at))
+          'url': issue.url
+        , 'title': issue.title
+        , 'state': issue.state
+        , 'open': [{
+            'from': formatDate(new Date(issue.created_at))
+          , 'to': issue.closed_at === null ? null : formatDate(new Date(issue.closed_at))
         }]
-        , "labels": labels
+        , 'labels': labels
       }
     }
     return issues_obj
@@ -276,10 +276,10 @@ $(function(){
     for (var i = 0; i < events.length; i++) {
       var number = events[i].issue.number
       var issue = issues[number]
-      if (typeof issue != "undefined") {
-        if (events[i].event === "closed") {
+      if (typeof issue != 'undefined') {
+        if (events[i].event === 'closed') {
           this.add_closed_event(issue, events[i])
-        } else if (events[i].event === "reopened") {
+        } else if (events[i].event === 'reopened') {
           this.add_reopened_event(issue, events[i])
         } else {
           continue
@@ -306,7 +306,7 @@ $(function(){
    */
   Parser.prototype.add_reopened_event = function(issue, event) {
     var event_created_at = formatDate(new Date(event.created_at))
-    issue.open.push({"from": event_created_at, "to": null})
+    issue.open.push({'from': event_created_at, 'to': null})
   }
 
   /**
@@ -316,7 +316,7 @@ $(function(){
    */
   Parser.prototype.tranform_issues = function(hash_issues) {
     var issues = []
-    for (number in hash_issues) {
+    for (var number in hash_issues) {
       var issue = hash_issues[number]
       issue.number = parseInt(number)
       issues.push(issue)
@@ -333,7 +333,7 @@ $(function(){
     var earliestTimestamp = +Infinity
     var earliestTime
 
-    for (number in hash_issues) {
+    for (var number in hash_issues) {
       var issue = hash_issues[number]
       var open = Date.parse(issue.open[0].from)
       if (open < earliestTimestamp) {
@@ -353,11 +353,11 @@ $(function(){
     if (error.request.status === 403) {
       return this.onAuthRequired(repository_uri)
     } else if (error.request.status === 404) {
-      return this.onError("Resource not found. Check if repository slug is correct.")
+      return this.onError('Resource not found. Check if repository slug is correct.')
     } else if (error.request.status === 401) {
-      return this.onError("You do not have permision to view this repository. Check if token is right. For private repositories check if token allows to read from that repository.")
+      return this.onError('You do not have permision to view this repository. Check if token is right. For private repositories check if token allows to read from that repository.')
     } else {
-      return this.onError("Unknown error.")
+      return this.onError('Unknown error.')
     }
   }
 
@@ -384,7 +384,7 @@ $(function(){
     var date = date_obj.getDate()
     var month = date_obj.getMonth() + 1
     var year = date_obj.getFullYear()
-    return year + "-" + pad2(month) + "-" + pad2(date)
+    return year + '-' + pad2(month) + '-' + pad2(date)
   }
 
   /**
@@ -393,7 +393,7 @@ $(function(){
    * @return {Boolean}
    */
   function is_of_type(element) {
-    var types = ["closed", "reopened", "labeled", "unlabeled"]
+    var types = ['closed', 'reopened', 'labeled', 'unlabeled']
     if (types.indexOf(element.event) > -1) {
       return true
     }
@@ -436,14 +436,14 @@ $(function(){
    * @return {String}
    */
   function getCookie(cname) {
-    var name = cname + "="
+    var name = cname + '='
     var ca = document.cookie.split(';')
     for(var i=0; i<ca.length; i++) {
         var c = ca[i]
         while (c.charAt(0)==' ') c = c.substring(1)
         if (c.indexOf(name) != -1) return c.substring(name.length,c.length)
     }
-    return "";
+    return '';
   }
 
   /**
